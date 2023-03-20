@@ -15,8 +15,9 @@ datasource db {
 model Brand {
   id        Int       @id @default(autoincrement())
   name      String
+  url       String
   createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  updatedAt DateTime? @updatedAt
   deletedAt DateTime?
   Cheese    Cheese[]
 }
@@ -27,8 +28,9 @@ model Brand {
 model CheeseType {
   id                   Int                    @id @default(autoincrement())
   name                 String
+  url                  String
   createdAt            DateTime               @default(now())
-  updatedAt            DateTime               @updatedAt
+  updatedAt            DateTime?              @updatedAt
   deletedAt            DateTime?
   Cheese               Cheese[]
   CheeseAndCheeseTypes CheeseAndCheeseTypes[]
@@ -39,10 +41,11 @@ model CheeseType {
 model Cheese {
   id                   Int                    @id @default(autoincrement())
   name                 String
+  url                  String
   brandId              Int
   brand                Brand                  @relation(fields: [brandId], references: [id])
   createdAt            DateTime               @default(now())
-  updatedAt            DateTime               @updatedAt
+  updatedAt            DateTime?              @updatedAt
   deletedAt            DateTime?
   CheeseTypes          CheeseType[]
   CheeseAndCheeseTypes CheeseAndCheeseTypes[]
@@ -57,7 +60,7 @@ model CheeseAndCheeseTypes {
   cheeseTypeId Int
   cheeseType   CheeseType @relation(fields: [cheeseTypeId], references: [id])
   createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
+  updatedAt    DateTime?  @updatedAt
   deletedAt    DateTime?
 }
 
@@ -69,6 +72,6 @@ model User {
   email     String    @unique
   password  String
   createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  updatedAt DateTime? @updatedAt
   deletedAt DateTime?
 }

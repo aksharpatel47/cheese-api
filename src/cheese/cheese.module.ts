@@ -1,12 +1,14 @@
 import { Module } from '@nestjs/common';
-import { BrandController } from './brand.controller';
 import { CheeseController } from './cheese.controller';
-import { CheeseService } from './cheese.service';
+import { CheeseRepository } from './cheese.repository';
 import { AuthModule } from '../auth/auth.module';
+import { CheeseTypesController } from './cheese.types.controller';
+import { CheeseTypesRepository } from './cheese.types.repository';
+import { CommonModule } from 'src/common/common.module';
 
 @Module({
-  imports: [AuthModule],
-  controllers: [BrandController, CheeseController],
-  providers: [CheeseService],
+  imports: [AuthModule, CommonModule],
+  controllers: [CheeseController, CheeseTypesController],
+  providers: [CheeseRepository, CheeseTypesRepository],
 })
 export class CheeseModule {}

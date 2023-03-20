@@ -3,7 +3,7 @@ import { PrismaClient } from '@prisma/client';
 import { CommonProviders } from '../common/common.providers';
 
 @Injectable()
-export class UserService {
+export class UserRepository {
   constructor(@Inject(CommonProviders.DB) private DB: PrismaClient) {}
 
   async findOne(email: string) {

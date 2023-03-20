@@ -4,7 +4,7 @@ import { AppService } from './app.service';
 import { CheeseModule } from './cheese/cheese.module';
 import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
-import { BrandService } from './brand/brand.service';
+import { BrandService } from './brand/brand.repository';
 import { CommonModule } from './common/common.module';
 
 @Module({

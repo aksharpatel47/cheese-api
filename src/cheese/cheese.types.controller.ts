@@ -12,34 +12,34 @@ import { AuthGuard } from '@nestjs/passport';
 import { CheeseRepository } from './cheese.repository';
 
 @UseGuards(AuthGuard('local'))
-@Controller('cheeses')
-export class CheeseController {
+@Controller('cheese-types')
+export class CheeseTypesController {
   constructor(private cheeseRepository: CheeseRepository) {}
 
   @Get()
-  getCheeses() {
+  getAllCheeseTypes() {
     return this.cheeseRepository.findAll();
   }
 
   @Get(':id')
-  getCheeseById(@Param('id') id: string) {
+  getCheeseTypeById(@Param('id') id: string) {
     const intId = parseInt(id);
     return this.cheeseRepository.findOne(intId);
   }
 
   @Post()
-  createCheese(@Body() body: any) {
+  createCheeseType(@Body() body: any) {
     return this.cheeseRepository.create(body);
   }
 
   @Put(':id')
-  updateCheese(@Param('id') id: string, @Body() body: any) {
+  updateCheeseType(@Param('id') id: string, @Body() body: any) {
     const intId = parseInt(id);
     return this.cheeseRepository.update(intId, body);
   }
 
   @Delete(':id')
-  deleteCheese(@Param('id') id: string) {
+  deleteCheeseType(@Param('id') id: string) {
     const intId = parseInt(id);
     return this.cheeseRepository.delete(intId);
   }
