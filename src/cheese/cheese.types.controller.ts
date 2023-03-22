@@ -8,10 +8,10 @@ import {
   Put,
   UseGuards,
 } from '@nestjs/common';
-import { AuthGuard } from '@nestjs/passport';
 import { CheeseRepository } from './cheese.repository';
+import { LocalAuthGuard } from '../auth/auth.guard';
 
-@UseGuards(AuthGuard('local'))
+@UseGuards(LocalAuthGuard)
 @Controller('cheese-types')
 export class CheeseTypesController {
   constructor(private cheeseRepository: CheeseRepository) {}

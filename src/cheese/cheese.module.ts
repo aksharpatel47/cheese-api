@@ -10,5 +10,6 @@ import { CommonModule } from 'src/common/common.module';
   imports: [AuthModule, CommonModule],
   controllers: [CheeseController, CheeseTypesController],
   providers: [CheeseRepository, CheeseTypesRepository],
+  exports: [CheeseRepository],
 })
 export class CheeseModule {}

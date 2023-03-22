@@ -1,11 +1,13 @@
 import { Module } from '@nestjs/common';
-import { BrandService } from './brand.repository';
+import { BrandRepository } from './brand.repository';
 import { BrandController } from './brand.controller';
 import { AuthModule } from 'src/auth/auth.module';
+import { CommonModule } from '../common/common.module';
+import { CheeseModule } from '../cheese/cheese.module';
 
 @Module({
-  imports: [AuthModule],
-  providers: [BrandService],
+  imports: [AuthModule, CommonModule, CheeseModule],
+  providers: [BrandRepository],
   controllers: [BrandController],
 })
 export class BrandModule {}

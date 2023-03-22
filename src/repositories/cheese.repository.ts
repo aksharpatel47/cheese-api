@@ -1,10 +1,7 @@
-import { Inject, Injectable } from '@nestjs/common';
 import { Prisma, PrismaClient } from '@prisma/client';
-import { CommonProviders } from '../common/common.providers';
 
-@Injectable()
 export class CheeseRepository {
-  constructor(@Inject(CommonProviders.DB) private DB: PrismaClient) {}
+  constructor(private DB: PrismaClient) {}
 
   findOne(id: number) {
     return this.DB.cheese.findFirst({

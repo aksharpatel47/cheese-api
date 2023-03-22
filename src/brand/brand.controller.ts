@@ -1,28 +1,43 @@
-import { Controller, Get, Post, Put, UseGuards } from '@nestjs/common';
-import { AuthGuard } from '@nestjs/passport';
-import { BrandService } from './brand.repository';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Put,
+  UseGuards,
+} from '@nestjs/common';
+import { BrandRepository } from './brand.repository';
+import { CheeseRepository } from '../cheese/cheese.repository';
+import { LocalAuthGuard } from '../auth/auth.guard';
 
-@UseGuards(AuthGuard('local'))
+@UseGuards(LocalAuthGuard)
 @Controller('brand')
 export class BrandController {
-  constructor(private brandService: BrandService) {}
+  constructor(
+    private brandRepository: BrandRepository,
+    private cheeseRepository: CheeseRepository,
+  ) {}
+
   @Get()
   getBrands() {
-    return 'Get all brands';
+    return this.brandRepository.findAll();
   }
 
   @Get(':id/cheeses')
-  getCheesesByBrand() {
-    return 'Get all cheeses by brand';
+  getCheesesByBrand(@Param('id') id: string) {
+    const intId = parseInt(id);
+    return this.cheeseRepository.findAllByBrandId(intId);
   }
 
   @Post()
-  createBrand() {
-    return 'Create a new brand';
+  createBrand(@Body() body: any) {
+    return this.brandRepository.create(body);
   }
 
   @Put(':id')
-  updateBrand() {
-    return 'Update a brand';
+  updateBrand(@Param('id') id: string, @Body() body: any) {
+    const intId = parseInt(id);
+    return this.brandRepository.update(intId, body);
   }
 }
