@@ -36,3 +36,28 @@ export function loginHandler(
     res.status(200).json('Authenticated.');
   };
 }
+
+const signupInput = z
+  .object({
+    name: z.string(),
+    email: z.string().email(),
+    password: z.string().min(8),
+  })
+  .required();
+
+export function signupHandler(
+  ctx: IContext,
+): RequestHandler<any, any, z.infer<typeof signupInput>> {
+  return async (req, res) => {
+    const input = signupInput.safeParse(req.body);
+    if (!IsSafeParseSuccess(input)) {
+      return res.status(400).json({
+        message: 'Invalid input',
+        errors: input.error.issues,
+      });
+    }
+
+    await ctx.repositories.user.create(input.data);
+    res.status(201).send('CREATED!');
+  };
+}

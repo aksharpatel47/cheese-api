@@ -2,8 +2,11 @@ import { Prisma, PrismaClient, User } from '@prisma/client';
 
 export interface IUserRepository {
   findOne(email: string): Promise<User | null>;
+
   findAll(): Promise<User[]>;
+
   create(data: Prisma.UserCreateInput): Promise<User>;
+
   update(id: number, data: Prisma.UserUpdateInput): Promise<User>;
 }
 

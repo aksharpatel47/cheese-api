@@ -1,9 +1,9 @@
 import { PrismaClient } from '@prisma/client';
 import { NewRepositories } from './repositories/repositories';
 import { NewServices } from './services/services';
+import * as express from 'express';
 import { Application } from 'express';
 import { IContext } from './context';
-import * as express from 'express';
 import { registerRoutes } from './routes';
 import * as process from 'process';
 

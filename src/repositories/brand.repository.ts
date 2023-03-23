@@ -2,9 +2,13 @@ import { Brand, Prisma, PrismaClient } from '@prisma/client';
 
 export interface IBrandRepository {
   findOne(id: number): Promise<Brand | null>;
+
   findAll(): Promise<Brand[]>;
+
   create(data: Prisma.BrandCreateInput): Promise<Brand>;
+
   update(id: number, data: Prisma.BrandUpdateInput): Promise<Brand>;
+
   delete(id: number): Promise<void>;
 }
 

@@ -3,7 +3,7 @@ import { IContext } from './context';
 import { Application } from 'express';
 import { getHealthHandler } from './handlers/health';
 import { createUserHandler, getAllUsersHandler } from './handlers/user';
-import { loginHandler } from './handlers/auth';
+import { loginHandler, signupHandler } from './handlers/auth';
 import {
   createCheeseHandler,
   deleteCheeseHandler,
@@ -25,7 +25,9 @@ export function registerRoutes(app: Application, ctx: IContext) {
   // health route
   app.get('/health', getHealthHandler(ctx));
   // auth route
-  app.post('/auth', loginHandler(ctx));
+  app.post('/auth/token', loginHandler(ctx));
+  app.post('/auth/refresh', loginHandler(ctx));
+  app.post('/auth', signupHandler(ctx));
   // user routes
   app.post('/users', createUserHandler(ctx));
   app.get('/users', getAllUsersHandler(ctx));

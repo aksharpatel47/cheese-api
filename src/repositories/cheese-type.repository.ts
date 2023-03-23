@@ -2,9 +2,13 @@ import { CheeseType, Prisma, PrismaClient } from '@prisma/client';
 
 export interface ICheeseTypeRepository {
   findOne(id: number): Promise<CheeseType | null>;
+
   findAll(): Promise<CheeseType[]>;
+
   create(data: Prisma.CheeseTypeCreateInput): Promise<CheeseType>;
+
   update(id: number, data: Prisma.CheeseTypeUpdateInput): Promise<CheeseType>;
+
   delete(id: number): Promise<void>;
 }
 
