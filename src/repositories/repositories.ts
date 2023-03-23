@@ -1,10 +1,20 @@
-import { UserRepository } from './user.repository';
+import { IUserRepository, UserRepository } from './user.repository';
 import { PrismaClient } from '@prisma/client';
-import { BrandRepository } from './brand.repository';
-import { CheeseRepository } from './cheese.repository';
-import { CheeseTypeRepository } from './cheese-type.repository';
+import { BrandRepository, IBrandRepository } from './brand.repository';
+import { CheeseRepository, ICheeseRepository } from './cheese.repository';
+import {
+  CheeseTypeRepository,
+  ICheeseTypeRepository,
+} from './cheese-type.repository';
 
-export function NewRepositories(DB: PrismaClient) {
+export interface IRepositories {
+  user: IUserRepository;
+  brand: IBrandRepository;
+  cheese: ICheeseRepository;
+  cheeseType: ICheeseTypeRepository;
+}
+
+export function NewRepositories(DB: PrismaClient): IRepositories {
   return {
     user: new UserRepository(DB),
     brand: new BrandRepository(DB),

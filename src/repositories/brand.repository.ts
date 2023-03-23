@@ -1,6 +1,14 @@
-import { Prisma, PrismaClient } from '@prisma/client';
+import { Brand, Prisma, PrismaClient } from '@prisma/client';
 
-export class BrandRepository {
+export interface IBrandRepository {
+  findOne(id: number): Promise<Brand | null>;
+  findAll(): Promise<Brand[]>;
+  create(data: Prisma.BrandCreateInput): Promise<Brand>;
+  update(id: number, data: Prisma.BrandUpdateInput): Promise<Brand>;
+  delete(id: number): Promise<void>;
+}
+
+export class BrandRepository implements IBrandRepository {
   constructor(private DB: PrismaClient) {}
 
   findOne(id: number) {
@@ -38,8 +46,8 @@ export class BrandRepository {
     });
   }
 
-  delete(id: number) {
-    return this.DB.brand.update({
+  async delete(id: number) {
+    await this.DB.brand.update({
       where: {
         id,
       },

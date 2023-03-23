@@ -1,6 +1,14 @@
-import { Prisma, PrismaClient } from '@prisma/client';
+import { CheeseType, Prisma, PrismaClient } from '@prisma/client';
 
-export class CheeseTypeRepository {
+export interface ICheeseTypeRepository {
+  findOne(id: number): Promise<CheeseType | null>;
+  findAll(): Promise<CheeseType[]>;
+  create(data: Prisma.CheeseTypeCreateInput): Promise<CheeseType>;
+  update(id: number, data: Prisma.CheeseTypeUpdateInput): Promise<CheeseType>;
+  delete(id: number): Promise<void>;
+}
+
+export class CheeseTypeRepository implements ICheeseTypeRepository {
   constructor(private DB: PrismaClient) {}
 
   findAll() {
@@ -38,8 +46,8 @@ export class CheeseTypeRepository {
     });
   }
 
-  delete(id: number) {
-    return this.DB.cheeseType.update({
+  async delete(id: number) {
+    await this.DB.cheeseType.update({
       where: {
         id,
       },
