@@ -26,6 +26,7 @@ export function createUserHandler(ctx: IContext): Handler {
   };
 }
 
+// TODO: Delete this handler
 export function getAllUsersHandler(ctx: IContext): Handler {
   return async (req, res) => {
     const users = await ctx.repositories.user.findAll();

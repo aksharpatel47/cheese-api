@@ -4,6 +4,20 @@ import { Application } from 'express';
 import { getHealthHandler } from './handlers/health';
 import { createUserHandler, getAllUsersHandler } from './handlers/user';
 import { loginHandler } from './handlers/auth';
+import {
+  createCheeseHandler,
+  deleteCheeseHandler,
+  getAllCheesesHandler,
+  getCheeseByIdHandler,
+  updateCheeseHandler,
+} from './handlers/cheese';
+import {
+  createBrandHandler,
+  deleteBrandHandler,
+  getAllBrandsHandler,
+  getBrandByIdHandler,
+  updateBrandHandler,
+} from './handlers/brand';
 
 export function registerRoutes(app: Application, ctx: IContext) {
   // middlewares
@@ -13,7 +27,18 @@ export function registerRoutes(app: Application, ctx: IContext) {
   // auth route
   app.post('/auth', loginHandler(ctx));
   // user routes
-  const userRoutes = app.route('/users');
-  userRoutes.post(createUserHandler(ctx));
-  userRoutes.get(getAllUsersHandler(ctx));
+  app.post('/users', createUserHandler(ctx));
+  app.get('/users', getAllUsersHandler(ctx));
+  // cheese routes
+  app.get('/cheeses', getAllCheesesHandler(ctx));
+  app.get('/cheeses/:id', getCheeseByIdHandler(ctx));
+  app.post('/cheeses', createCheeseHandler(ctx));
+  app.put('/cheeses/:id', updateCheeseHandler(ctx));
+  app.delete('/cheeses/:id', deleteCheeseHandler(ctx));
+  // brand routes
+  app.get('/brands', getAllBrandsHandler(ctx));
+  app.get('/brands/:id', getBrandByIdHandler(ctx));
+  app.post('/brands', createBrandHandler(ctx));
+  app.put('/brands/:id', updateBrandHandler(ctx));
+  app.delete('/brands/:id', deleteBrandHandler(ctx));
 }

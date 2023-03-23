@@ -6,8 +6,8 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = "file:./dev.db"
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 // Model to store brand information
@@ -43,7 +43,7 @@ model Cheese {
   name                 String
   url                  String
   brandId              Int
-  brand                Brand                  @relation(fields: [brandId], references: [id])
+  brand                Brand                  @relation(fields: [brandId], references: [id], onDelete: Restrict)
   createdAt            DateTime               @default(now())
   updatedAt            DateTime?              @updatedAt
   deletedAt            DateTime?
@@ -56,12 +56,12 @@ model Cheese {
 model CheeseAndCheeseTypes {
   id           Int        @id @default(autoincrement())
   cheeseId     Int
-  cheese       Cheese     @relation(fields: [cheeseId], references: [id])
+  cheese       Cheese     @relation(fields: [cheeseId], references: [id], onDelete: Cascade)
   cheeseTypeId Int
-  cheeseType   CheeseType @relation(fields: [cheeseTypeId], references: [id])
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime?  @updatedAt
-  deletedAt    DateTime?
+  cheeseType   CheeseType @relation(fields: [cheeseTypeId], references: [id], onDelete: Cascade)
+
+  // create unique index on cheeseId and cheeseTypeId
+  @@unique([cheeseId, cheeseTypeId])
 }
 
 // Model to store user information with email and password

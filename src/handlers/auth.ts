@@ -1,5 +1,5 @@
 import { IContext } from '../context';
-import { Handler } from 'express';
+import { RequestHandler } from 'express';
 import { z } from 'zod';
 import { IsSafeParseSuccess } from '../utils';
 
@@ -10,7 +10,9 @@ const loginInput = z
   })
   .required();
 
-export function loginHandler(ctx: IContext): Handler {
+export function loginHandler(
+  ctx: IContext,
+): RequestHandler<any, any, z.infer<typeof loginInput>> {
   return async (req, res) => {
     const input = loginInput.safeParse(req.body);
     if (!IsSafeParseSuccess(input)) {

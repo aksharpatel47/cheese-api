@@ -1,11 +1,25 @@
-import { Cheese, Prisma, PrismaClient } from '@prisma/client';
+import { Cheese, PrismaClient } from '@prisma/client';
 
 export interface ICheeseRepository {
   findOne(id: number): Promise<Cheese | null>;
+
   findAll(): Promise<Cheese[]>;
+
   findAllByBrandId(brandId: number): Promise<Cheese[]>;
-  create(data: Prisma.CheeseCreateInput): Promise<Cheese>;
-  update(id: number, data: Prisma.CheeseUpdateInput): Promise<Cheese>;
+
+  create(
+    brandId: number,
+    data: ICheeseInput,
+    cheeseTypes: number[],
+  ): Promise<Cheese>;
+
+  update(
+    id: number,
+    brandId: number,
+    data: { name: string; url: string },
+    cheeseTypes: number[],
+  ): Promise<Cheese>;
+
   delete(id: number): Promise<void>;
 }
 
@@ -42,19 +56,40 @@ export class CheeseRepository implements ICheeseRepository {
     });
   }
 
-  create(data: Prisma.CheeseCreateInput) {
+  create(brandId: number, data: ICheeseInput, cheeseTypes: number[]) {
     return this.DB.cheese.create({
-      data,
+      data: {
+        brandId,
+        name: data.name,
+        url: data.url,
+        CheeseAndCheeseTypes: {
+          create: cheeseTypes.map((c) => ({ cheeseTypeId: c })),
+        },
+      },
     });
   }
 
-  update(id: number, data: Prisma.CheeseUpdateInput) {
+  async update(
+    id: number,
+    brandId: number,
+    data: ICheeseInput,
+    cheeseTypes: number[],
+  ) {
+    await this.DB.cheeseAndCheeseTypes.deleteMany({
+      where: {
+        cheeseId: id,
+      },
+    });
+
     return this.DB.cheese.update({
       where: {
         id,
       },
       data: {
         ...data,
+        CheeseAndCheeseTypes: {
+          create: cheeseTypes.map((c) => ({ cheeseTypeId: c })),
+        },
         updatedAt: new Date(),
       },
     });
@@ -70,4 +105,10 @@ export class CheeseRepository implements ICheeseRepository {
       },
     });
   }
+}
+
+// models
+export interface ICheeseInput {
+  name: string;
+  url: string;
 }
