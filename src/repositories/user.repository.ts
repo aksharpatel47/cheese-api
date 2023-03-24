@@ -2,6 +2,7 @@ import { Prisma, PrismaClient, User } from '@prisma/client';
 
 export interface IUserRepository {
   findOne(email: string): Promise<User | null>;
+  findById(id: number): Promise<User | null>;
 
   findAll(): Promise<User[]>;
 
@@ -21,10 +22,20 @@ export class UserRepository implements IUserRepository {
     });
   }
 
+  findById(id: number): Promise<User | null> {
+    return this.DB.user.findFirst({
+      where: {
+        id,
+        deletedAt: null,
+      },
+    });
+  }
+
   findOne(email: string) {
-    return this.DB.user.findUnique({
+    return this.DB.user.findFirst({
       where: {
         email,
+        deletedAt: null,
       },
     });
   }
