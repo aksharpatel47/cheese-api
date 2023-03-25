@@ -1,13 +1,10 @@
-import { IContext } from '../context';
-import { RequestHandler } from 'express';
+import { Request, Response } from 'express';
 import { z } from 'zod';
 import { IsSafeParseSuccess } from '../utils';
 
-export function getAllCheeseTypes(ctx: IContext): RequestHandler {
-  return async (req, res) => {
-    const cheeseTypes = await ctx.repositories.cheeseType.findAll();
-    res.json(cheeseTypes);
-  };
+export async function getAllCheeseTypesHandler(req: Request, res: Response) {
+  const cheeseTypes = await req.ctx.repositories.cheeseType.findAll();
+  res.status(200).json(cheeseTypes);
 }
 
 const cheeseTypeInput = z.object({
@@ -15,45 +12,38 @@ const cheeseTypeInput = z.object({
   url: z.string().url(),
 });
 
-export function createCheeseTypeHandler(ctx: IContext): RequestHandler {
-  return async (req, res) => {
-    const input = cheeseTypeInput.safeParse(req.body);
-    if (!IsSafeParseSuccess(input)) {
-      return res.status(400).json({
-        message: 'Invalid input',
-        errors: input.error.issues,
-      });
-    }
+export async function createCheeseTypeHandler(req: Request, res: Response) {
+  const input = cheeseTypeInput.safeParse(req.body);
+  if (!IsSafeParseSuccess(input)) {
+    return res.status(400).json({
+      message: 'Invalid input',
+      errors: input.error.issues,
+    });
+  }
 
-    const cheese = await ctx.repositories.cheeseType.create(input.data);
-    res.json(cheese);
-  };
+  const cheese = await req.ctx.repositories.cheeseType.create(input.data);
+  res.json(cheese);
 }
 
-export function updateCheeseTypeHandler(
-  ctx: IContext,
-): RequestHandler<{ id: string }> {
-  return async (req, res) => {
-    const input = cheeseTypeInput.safeParse(req.body);
-    if (!IsSafeParseSuccess(input)) {
-      return res.status(400).json({
-        message: 'Invalid input',
-        errors: input.error.issues,
-      });
-    }
+export async function updateCheeseTypeHandler(req: Request, res: Response) {
+  const input = cheeseTypeInput.safeParse(req.body);
+  if (!IsSafeParseSuccess(input)) {
+    return res.status(400).json({
+      message: 'Invalid input',
+      errors: input.error.issues,
+    });
+  }
 
-    const intId = parseInt(req.params.id, 10);
-    const cheese = await ctx.repositories.cheeseType.update(intId, input.data);
-    res.json(cheese);
-  };
+  const intId = parseInt(req.params.id, 10);
+  const cheese = await req.ctx.repositories.cheeseType.update(
+    intId,
+    input.data,
+  );
+  res.json(cheese);
 }
 
-export function deleteCheeseTypeHandler(
-  ctx: IContext,
-): RequestHandler<{ id: string }> {
-  return async (req, res) => {
-    const intId = parseInt(req.params.id, 10);
-    await ctx.repositories.cheeseType.delete(intId);
-    res.status(204).end();
-  };
+export async function deleteCheeseTypeHandler(req: Request, res: Response) {
+  const intId = parseInt(req.params.id, 10);
+  await req.ctx.repositories.cheeseType.delete(intId);
+  res.status(204).end();
 }

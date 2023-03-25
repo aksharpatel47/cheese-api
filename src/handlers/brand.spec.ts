@@ -5,9 +5,9 @@ describe('Create Brand Handler', () => {
   test('should return 400 if input is invalid', async () => {
     const ctx = createUnitTestContext();
 
-    const handler = createBrandHandler(ctx);
     const req: any = {
       body: {},
+      ctx,
     };
 
     const res: any = {
@@ -15,7 +15,7 @@ describe('Create Brand Handler', () => {
       json: jest.fn(),
     };
 
-    await handler(req, res, jest.fn());
+    await createBrandHandler(req, res);
 
     expect(res.status).toHaveBeenCalledWith(400);
     expect(res.json).toBeCalled();
@@ -30,9 +30,9 @@ describe('Create Brand Handler', () => {
     const ctx = createUnitTestContext();
     ctx.repositories.brand.create = jest.fn().mockResolvedValue(brand);
 
-    const handler = createBrandHandler(ctx);
     const req: any = {
       body: brand,
+      ctx,
     };
 
     const res: any = {
@@ -40,7 +40,7 @@ describe('Create Brand Handler', () => {
       json: jest.fn(),
     };
 
-    await handler(req, res, jest.fn());
+    await createBrandHandler(req, res);
 
     expect(res.status).toHaveBeenCalledWith(201);
     expect(res.json).toBeCalledWith(brand);

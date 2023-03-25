@@ -1,5 +1,5 @@
 import { IContext } from '../context';
-import { Handler } from 'express';
+import { Handler, Request, Response } from 'express';
 import { z } from 'zod';
 import { IsSafeParseSuccess } from '../utils';
 
@@ -11,19 +11,17 @@ const createUserInput = z
   })
   .required();
 
-export function createUserHandler(ctx: IContext): Handler {
-  return async (req, res) => {
-    const userInput = createUserInput.safeParse(req.body);
-    if (!IsSafeParseSuccess(userInput)) {
-      return res.status(400).json({
-        message: 'Invalid input',
-        errors: userInput.error.issues,
-      });
-    }
+export async function createUserHandler(req: Request, res: Response) {
+  const input = createUserInput.safeParse(req.body);
+  if (!IsSafeParseSuccess(input)) {
+    return res.status(400).json({
+      message: 'Invalid input',
+      errors: input.error.issues,
+    });
+  }
 
-    const user = await ctx.repositories.user.create(userInput.data);
-    res.status(201).json(user);
-  };
+  const user = await req.ctx.repositories.user.create(input.data);
+  res.status(201).json(user);
 }
 
 /**
@@ -31,9 +29,7 @@ export function createUserHandler(ctx: IContext): Handler {
  * @param ctx
  * @deprecated
  */
-export function getAllUsersHandler(ctx: IContext): Handler {
-  return async (req, res) => {
-    const users = await ctx.repositories.user.findAll();
-    res.status(200).json(users);
-  };
+export async function getAllUsersHandler(req: Request, res: Response) {
+  const users = await req.ctx.repositories.user.findAll();
+  res.status(200).json(users);
 }

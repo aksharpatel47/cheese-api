@@ -1,5 +1,4 @@
-import { IContext } from '../context';
-import { RequestHandler } from 'express';
+import { Request, Response } from 'express';
 import { z } from 'zod';
 import { IsSafeParseSuccess } from '../utils';
 
@@ -10,31 +9,27 @@ const loginInput = z
   })
   .required();
 
-export function loginHandler(
-  ctx: IContext,
-): RequestHandler<any, any, z.infer<typeof loginInput>> {
-  return async (req, res) => {
-    const input = loginInput.safeParse(req.body);
-    if (!IsSafeParseSuccess(input)) {
-      return res.status(400).json({
-        message: 'Invalid input',
-        errors: input.error.issues,
-      });
-    }
+export async function loginHandler(req: Request, res: Response) {
+  const input = loginInput.safeParse(req.body);
+  if (!IsSafeParseSuccess(input)) {
+    return res.status(400).json({
+      message: 'Invalid input',
+      errors: input.error.issues,
+    });
+  }
 
-    const user = await ctx.services.auth.validateUser(
-      input.data.email,
-      input.data.password,
-    );
+  const user = await req.ctx.services.auth.validateUser(
+    input.data.email,
+    input.data.password,
+  );
 
-    if (!user) {
-      return res.status(401).json({
-        message: 'Invalid credentials',
-      });
-    }
+  if (!user) {
+    return res.status(401).json({
+      message: 'Invalid credentials',
+    });
+  }
 
-    res.status(200).json('Authenticated.');
-  };
+  res.status(200).json('Authenticated.');
 }
 
 const signupInput = z
@@ -45,19 +40,15 @@ const signupInput = z
   })
   .required();
 
-export function signupHandler(
-  ctx: IContext,
-): RequestHandler<any, any, z.infer<typeof signupInput>> {
-  return async (req, res) => {
-    const input = signupInput.safeParse(req.body);
-    if (!IsSafeParseSuccess(input)) {
-      return res.status(400).json({
-        message: 'Invalid input',
-        errors: input.error.issues,
-      });
-    }
+export async function signupHandler(req: Request, res: Response) {
+  const input = signupInput.safeParse(req.body);
+  if (!IsSafeParseSuccess(input)) {
+    return res.status(400).json({
+      message: 'Invalid input',
+      errors: input.error.issues,
+    });
+  }
 
-    await ctx.repositories.user.create(input.data);
-    res.status(201).send('CREATED!');
-  };
+  await req.ctx.repositories.user.create(input.data);
+  res.status(201).send('CREATED!');
 }
