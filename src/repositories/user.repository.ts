@@ -1,10 +1,12 @@
 import { Prisma, PrismaClient, User } from '@prisma/client';
+import { IUserDto } from '../models/user';
 
 export interface IUserRepository {
   findOne(email: string): Promise<User | null>;
+
   findById(id: number): Promise<User | null>;
 
-  findAll(): Promise<User[]>;
+  findAll(): Promise<IUserDto[]>;
 
   create(data: Prisma.UserCreateInput): Promise<User>;
 
@@ -14,8 +16,13 @@ export interface IUserRepository {
 export class UserRepository implements IUserRepository {
   constructor(private DB: PrismaClient) {}
 
-  findAll(): Promise<User[]> {
+  findAll(): Promise<IUserDto[]> {
     return this.DB.user.findMany({
+      select: {
+        id: true,
+        name: true,
+        email: true,
+      },
       where: {
         deletedAt: null,
       },

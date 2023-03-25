@@ -1,9 +1,9 @@
 import { createBrandHandler } from './brand';
-import { Brand } from '@prisma/client';
+import { createUnitTestContext } from '../context';
 
 describe('Create Brand Handler', () => {
   test('should return 400 if input is invalid', async () => {
-    const ctx: any = {};
+    const ctx = createUnitTestContext();
 
     const handler = createBrandHandler(ctx);
     const req: any = {
@@ -27,13 +27,8 @@ describe('Create Brand Handler', () => {
       name: 'Brand 1',
       url: 'https://brand1.com',
     };
-    const ctx: any = {
-      repositories: {
-        brand: {
-          create: jest.fn().mockResolvedValue(brand),
-        },
-      },
-    };
+    const ctx = createUnitTestContext();
+    ctx.repositories.brand.create = jest.fn().mockResolvedValue(brand);
 
     const handler = createBrandHandler(ctx);
     const req: any = {
