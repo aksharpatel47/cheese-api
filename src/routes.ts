@@ -1,8 +1,7 @@
 import * as bodyParser from 'body-parser';
 import { IContext } from './context';
-import { Application } from 'express';
+import { Application, Router } from 'express';
 import { getHealthHandler } from './handlers/health';
-import { createUserHandler, getAllUsersHandler } from './handlers/user';
 import { loginHandler, signupHandler } from './handlers/auth';
 import {
   createCheeseHandler,
@@ -22,6 +21,8 @@ import {
   createCheeseTypeHandler,
   getAllCheeseTypesHandler,
 } from './handlers/cheese-types';
+import * as passport from 'passport';
+import { ExtractJwt, Strategy } from 'passport-jwt';
 
 export function registerRoutes(app: Application, ctx: IContext) {
   // middlewares
@@ -31,30 +32,56 @@ export function registerRoutes(app: Application, ctx: IContext) {
     req.ctx = ctx;
     next();
   });
+
+  // setup passport jwt strategy
+  passport.use(
+    new Strategy(
+      {
+        jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+        issuer: 'https://aksharpatel47.com',
+        secretOrKey: process.env.TOKEN_SECRET,
+        audience: 'https://veg-cheese.aksharpatel47.com',
+      },
+      function (payload, done) {
+        ctx.repositories.user.findById(payload.sub).then(
+          (user) => {
+            if (user) {
+              return done(null, user);
+            } else {
+              return done(null, false);
+            }
+          },
+          (err: Error) => done(err, false),
+        );
+      },
+    ),
+  );
+
+  // public routes
   // health route
   app.get('/health', getHealthHandler);
-  // auth route
   app.post('/auth/token', loginHandler);
-  app.post('/auth/refresh', loginHandler);
   app.post('/auth', signupHandler);
-  // user routes
-  app.post('/users', createUserHandler);
-  app.get('/users', getAllUsersHandler);
+
+  // authenticated routes
+  const authenticatedRouter = Router();
+  authenticatedRouter.use(passport.authenticate('jwt', { session: false }));
+  app.post('/auth/refresh', loginHandler);
   // cheese routes
-  app.get('/cheeses', getAllCheesesHandler);
-  app.get('/cheeses/:id', getCheeseByIdHandler);
-  app.post('/cheeses', createCheeseHandler);
-  app.put('/cheeses/:id', updateCheeseHandler);
-  app.delete('/cheeses/:id', deleteCheeseHandler);
+  authenticatedRouter.get('/cheeses', getAllCheesesHandler);
+  authenticatedRouter.get('/cheeses/:id', getCheeseByIdHandler);
+  authenticatedRouter.post('/cheeses', createCheeseHandler);
+  authenticatedRouter.put('/cheeses/:id', updateCheeseHandler);
+  authenticatedRouter.delete('/cheeses/:id', deleteCheeseHandler);
   // cheese-types routes
-  app.get('/cheese-types', getAllCheeseTypesHandler);
-  app.post('/cheese-types', createCheeseTypeHandler);
-  app.put('/cheese-types/:id', updateCheeseHandler);
-  app.delete('/cheese-types/:id', deleteCheeseHandler);
+  authenticatedRouter.get('/cheese-types', getAllCheeseTypesHandler);
+  authenticatedRouter.post('/cheese-types', createCheeseTypeHandler);
+  authenticatedRouter.put('/cheese-types/:id', updateCheeseHandler);
+  authenticatedRouter.delete('/cheese-types/:id', deleteCheeseHandler);
   // brand routes
-  app.get('/brands', getAllBrandsHandler);
-  app.get('/brands/:id', getBrandByIdHandler);
-  app.post('/brands', createBrandHandler);
-  app.put('/brands/:id', updateBrandHandler);
-  app.delete('/brands/:id', deleteBrandHandler);
+  authenticatedRouter.get('/brands', getAllBrandsHandler);
+  authenticatedRouter.get('/brands/:id', getBrandByIdHandler);
+  authenticatedRouter.post('/brands', createBrandHandler);
+  authenticatedRouter.put('/brands/:id', updateBrandHandler);
+  authenticatedRouter.delete('/brands/:id', deleteBrandHandler);
 }

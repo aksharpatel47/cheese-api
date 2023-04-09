@@ -1,46 +1,80 @@
-import { Cheese, PrismaClient } from '@prisma/client';
+import {
+  CheeseAndCheeseTypesDbTable,
+  CheeseDbTable,
+  CheeseTypeDbTable,
+  ICheeseDto,
+  ICheeseInput,
+  ICheeseWithBrandDto,
+} from '../models/cheese';
+import { NodePgDatabase } from 'drizzle-orm/node-postgres';
+import { BrandDbTable } from '../models/brand';
+import { and, eq, isNull } from 'drizzle-orm/expressions';
 
 export interface ICheeseRepository {
-  findOne(id: number): Promise<Cheese | null>;
+  findOne(id: number): Promise<ICheeseWithBrandDto | null>;
 
-  findAll(): Promise<Cheese[]>;
+  findAll(): Promise<ICheeseWithBrandDto[]>;
 
-  findAllByBrandId(brandId: number): Promise<Cheese[]>;
+  findAllByBrandId(brandId: number): Promise<ICheeseDto[]>;
 
   create(
     brandId: number,
     data: ICheeseInput,
     cheeseTypes: number[],
-  ): Promise<Cheese>;
+  ): Promise<ICheeseDto>;
 
   update(
     id: number,
     brandId: number,
     data: { name: string; url: string },
     cheeseTypes: number[],
-  ): Promise<Cheese>;
+  ): Promise<void>;
 
   delete(id: number): Promise<void>;
 }
 
-export class CheeseRepository implements ICheeseRepository {
-  constructor(private DB: PrismaClient) {}
+const cheeseWithBrandTableFields = {
+  id: CheeseDbTable.id,
+  name: CheeseDbTable.name,
+  description: CheeseDbTable.description,
+  url: CheeseDbTable.url,
+  brand: {
+    id: BrandDbTable.id,
+    name: BrandDbTable.name,
+    description: BrandDbTable.description,
+    url: BrandDbTable.url,
+  },
+  createdAt: CheeseDbTable.createdAt,
+  updatedAt: CheeseDbTable.updatedAt,
+};
 
-  findOne(id: number) {
-    return this.DB.cheese.findFirst({
-      where: {
-        id,
-        deletedAt: null,
-      },
-    });
+const cheeseTableFields = {
+  id: CheeseDbTable.id,
+  name: CheeseDbTable.name,
+  description: CheeseDbTable.description,
+  url: CheeseDbTable.url,
+  createdAt: CheeseDbTable.createdAt,
+  updatedAt: CheeseDbTable.updatedAt,
+  brandId: CheeseDbTable.brandId,
+};
+
+export class CheeseRepository implements ICheeseRepository {
+  constructor(private DB: NodePgDatabase) {}
+
+  async findOne(id: number): Promise<ICheeseWithBrandDto | null> {
+    const results = await this.DB.select(cheeseWithBrandTableFields)
+      .from(CheeseDbTable)
+      .innerJoin(BrandDbTable, eq(CheeseDbTable.brandId, BrandDbTable.id))
+      .where(and(eq(CheeseDbTable.id, id), isNull(CheeseDbTable.deletedAt)));
+
+    return results.length > 0 ? results[0] : null;
   }
 
   findAll() {
-    return this.DB.cheese.findMany({
-      where: {
-        deletedAt: null,
-      },
-    });
+    return this.DB.select(cheeseWithBrandTableFields)
+      .from(CheeseDbTable)
+      .innerJoin(BrandDbTable, eq(CheeseDbTable.brandId, BrandDbTable.id))
+      .where(isNull(CheeseDbTable.deletedAt));
   }
 
   /**
@@ -48,25 +82,32 @@ export class CheeseRepository implements ICheeseRepository {
    * @param brandId
    */
   findAllByBrandId(brandId: number) {
-    return this.DB.cheese.findMany({
-      where: {
-        brandId,
-        deletedAt: null,
-      },
-    });
+    return this.DB.select(cheeseTableFields)
+      .from(CheeseDbTable)
+      .where(
+        and(
+          eq(CheeseDbTable.brandId, brandId),
+          isNull(CheeseDbTable.deletedAt),
+        ),
+      );
   }
 
-  create(brandId: number, data: ICheeseInput, cheeseTypes: number[]) {
-    return this.DB.cheese.create({
-      data: {
+  async create(brandId: number, data: ICheeseInput, cheeseTypes: number[]) {
+    const result = await this.DB.insert(CheeseDbTable)
+      .values({
+        ...data,
         brandId,
-        name: data.name,
-        url: data.url,
-        CheeseAndCheeseTypes: {
-          create: cheeseTypes.map((c) => ({ cheeseTypeId: c })),
-        },
-      },
-    });
+      })
+      .returning(cheeseTableFields);
+
+    const newCheeseTypes = cheeseTypes.map((c) => ({
+      cheeseId: result[0].id,
+      cheeseTypeId: c,
+    }));
+
+    await this.DB.insert(CheeseAndCheeseTypesDbTable).values(newCheeseTypes);
+
+    return result[0];
   }
 
   async update(
@@ -75,40 +116,22 @@ export class CheeseRepository implements ICheeseRepository {
     data: ICheeseInput,
     cheeseTypes: number[],
   ) {
-    await this.DB.cheeseAndCheeseTypes.deleteMany({
-      where: {
-        cheeseId: id,
-      },
+    await this.DB.delete(CheeseAndCheeseTypesDbTable).where(
+      eq(CheeseAndCheeseTypesDbTable.cheeseId, id),
+    );
+    await this.DB.update(CheeseDbTable).set({
+      ...data,
     });
-
-    return this.DB.cheese.update({
-      where: {
-        id,
-      },
-      data: {
-        ...data,
-        CheeseAndCheeseTypes: {
-          create: cheeseTypes.map((c) => ({ cheeseTypeId: c })),
-        },
-        updatedAt: new Date(),
-      },
-    });
+    const newCheeseTypes = cheeseTypes.map((c) => ({
+      cheeseId: id,
+      cheeseTypeId: c,
+    }));
+    await this.DB.insert(CheeseAndCheeseTypesDbTable).values(newCheeseTypes);
   }
 
   async delete(id: number) {
-    await this.DB.cheese.update({
-      where: {
-        id,
-      },
-      data: {
-        deletedAt: new Date(),
-      },
-    });
+    await this.DB.delete(CheeseAndCheeseTypesDbTable).where(
+      eq(CheeseAndCheeseTypesDbTable.cheeseId, id),
+    );
   }
-}
-
-// models
-export interface ICheeseInput {
-  name: string;
-  url: string;
 }

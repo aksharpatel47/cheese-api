@@ -1,6 +1,7 @@
-import { PrismaClient } from '@prisma/client';
 import { IRepositories, NewRepositories } from './repositories/repositories';
 import { IServices, NewServices } from './services/services';
+import { Pool } from 'pg';
+import { drizzle } from 'drizzle-orm/node-postgres';
 
 export interface IContext {
   repositories: IRepositories;
@@ -8,7 +9,10 @@ export interface IContext {
 }
 
 export function createContext(): IContext {
-  const db = new PrismaClient();
+  const pool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+  });
+  const db = drizzle(pool);
   const repositories = NewRepositories(db);
   const services = NewServices(repositories);
 
@@ -22,10 +26,8 @@ export function createUnitTestContext(): IContext {
   const mockRepositories: IRepositories = {
     user: {
       create: jest.fn(),
-      findAll: jest.fn(),
       findById: jest.fn(),
-      findOne: jest.fn(),
-      update: jest.fn(),
+      getUserWithPassword: jest.fn(),
     },
     cheeseType: {
       create: jest.fn(),

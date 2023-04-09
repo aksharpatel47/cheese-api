@@ -5,10 +5,11 @@
   "description": "Nest TypeScript starter repository",
   "license": "MIT",
   "scripts": {
-    "build": "nest build",
+    "build:dev": "tsc --watch",
+    "run:dev": "nodemon --require source-map-support/register --watch dist dist/app.js",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
-    "start:dev": "nodemon --exec ts-node src/app.ts",
+    "start:dev": "concurrently \"npm run build:dev\" \"npm run run:dev\"",
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
@@ -19,11 +20,14 @@
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
-    "@prisma/client": "4.11.0",
+    "@types/pg": "8.6.6",
     "body-parser": "1.20.2",
+    "drizzle-orm": "0.23.2",
+    "drizzle-zod": "^0.1.4",
     "express": "4.18.2",
     "passport": "0.6.0",
     "passport-jwt": "4.0.1",
+    "pg": "8.10.0",
     "zod": "3.21.4"
   },
   "devDependencies": {
@@ -34,20 +38,21 @@
     "@types/supertest": "2.0.12",
     "@typescript-eslint/eslint-plugin": "5.56.0",
     "@typescript-eslint/parser": "5.56.0",
+    "drizzle-kit": "^0.17.1",
     "eslint": "8.36.0",
     "eslint-config-prettier": "8.8.0",
     "eslint-plugin-prettier": "4.2.1",
     "jest": "29.5.0",
     "nodemon": "2.0.22",
     "prettier": "2.8.7",
-    "prisma": "4.11.0",
     "source-map-support": "0.5.21",
     "supertest": "6.3.3",
     "ts-jest": "29.0.5",
     "ts-loader": "9.4.2",
     "ts-node": "10.9.1",
     "tsconfig-paths": "4.1.2",
-    "typescript": "5.0.2"
+    "typescript": "5.0.2",
+    "concurrently": "^8.0.1"
   },
   "jest": {
     "moduleFileExtensions": [

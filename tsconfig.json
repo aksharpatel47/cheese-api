@@ -3,7 +3,7 @@
     "module": "commonjs",
     "declaration": true,
     "typeRoots": [
-      "src",
+      "src/**/*",
       "node_modules/@types"
     ],
     "removeComments": true,

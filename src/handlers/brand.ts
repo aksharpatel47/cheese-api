@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { z } from 'zod';
+import { BrandInputSchema } from '../models/brand';
 
 export async function getAllBrandsHandler(req: Request, res: Response) {
   const brands = await req.ctx.repositories.brand.findAll();
@@ -17,15 +17,8 @@ export async function getBrandByIdHandler(req: Request, res: Response) {
   res.status(200).json(brand);
 }
 
-const createBrandInput = z
-  .object({
-    name: z.string(),
-    url: z.string().url(),
-  })
-  .required();
-
 export async function createBrandHandler(req: Request, res: Response) {
-  const input = createBrandInput.safeParse(req.body);
+  const input = BrandInputSchema.safeParse(req.body);
   if (!input.success) {
     return res.status(400).json({
       message: 'Invalid input',
@@ -40,13 +33,8 @@ export async function createBrandHandler(req: Request, res: Response) {
   res.status(201).json(brand);
 }
 
-const updateBrandInput = z.object({
-  name: z.string(),
-  url: z.string().url(),
-});
-
 export async function updateBrandHandler(req: Request, res: Response) {
-  const input = updateBrandInput.safeParse(req.body);
+  const input = BrandInputSchema.safeParse(req.body);
   if (!input.success) {
     return res.status(400).json({
       message: 'Invalid input',

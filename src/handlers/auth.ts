@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { z } from 'zod';
 import { IsSafeParseSuccess } from '../utils';
+import { UserInputSchema, UserWithPasswordSchema } from '../models/user';
 
 const loginInput = z
   .object({
@@ -32,16 +33,23 @@ export async function loginHandler(req: Request, res: Response) {
   res.status(200).json('Authenticated.');
 }
 
-const signupInput = z
-  .object({
-    name: z.string(),
-    email: z.string().email(),
-    password: z.string().min(8),
-  })
-  .required();
+export async function refreshTokenHandler(req: Request, res: Response) {
+  const user = await req.ctx.services.auth.refreshToken(req.body.refreshToken);
 
-export async function signupHandler(req: Request, res: Response) {
-  const input = signupInput.safeParse(req.body);
+  if (!user) {
+    return res.status(401).json({
+      message: 'Invalid credentials',
+    });
+  }
+
+  res.status(200).json('Authenticated.');
+}
+
+export async function signupHandler(
+  req: Request<any, z.infer<typeof UserInputSchema>>,
+  res: Response,
+) {
+  const input = UserInputSchema.safeParse(req.body);
   if (!IsSafeParseSuccess(input)) {
     return res.status(400).json({
       message: 'Invalid input',
@@ -49,6 +57,6 @@ export async function signupHandler(req: Request, res: Response) {
     });
   }
 
-  await req.ctx.repositories.user.create(input.data);
+  await req.ctx.repositories.user.create(input.data, '');
   res.status(201).send('CREATED!');
 }

@@ -1,11 +1,11 @@
 import { IUserRepository, UserRepository } from './user.repository';
-import { PrismaClient } from '@prisma/client';
 import { BrandRepository, IBrandRepository } from './brand.repository';
 import { CheeseRepository, ICheeseRepository } from './cheese.repository';
 import {
   CheeseTypeRepository,
   ICheeseTypeRepository,
 } from './cheese-type.repository';
+import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 
 export interface IRepositories {
   user: IUserRepository;
@@ -14,7 +14,7 @@ export interface IRepositories {
   cheeseType: ICheeseTypeRepository;
 }
 
-export function NewRepositories(DB: PrismaClient): IRepositories {
+export function NewRepositories(DB: NodePgDatabase): IRepositories {
   return {
     user: new UserRepository(DB),
     brand: new BrandRepository(DB),

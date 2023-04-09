@@ -1,67 +1,56 @@
-import { Prisma, PrismaClient, User } from '@prisma/client';
-import { IUserDto } from '../models/user';
+import {
+  IUserDto,
+  IUserInput,
+  IUserWithPassword,
+  UserDbTable,
+} from '../models/user';
+import { NodePgDatabase } from 'drizzle-orm/node-postgres';
+import { eq } from 'drizzle-orm/expressions';
 
 export interface IUserRepository {
-  findOne(email: string): Promise<User | null>;
+  getUserWithPassword(email: string): Promise<IUserWithPassword | null>;
 
-  findById(id: number): Promise<User | null>;
+  findById(id: number): Promise<IUserDto | null>;
 
-  findAll(): Promise<IUserDto[]>;
-
-  create(data: Prisma.UserCreateInput): Promise<User>;
-
-  update(id: number, data: Prisma.UserUpdateInput): Promise<User>;
+  create(data: IUserInput, refreshToken: string): Promise<IUserDto>;
 }
 
 export class UserRepository implements IUserRepository {
-  constructor(private DB: PrismaClient) {}
+  constructor(private DB: NodePgDatabase) {}
 
-  findAll(): Promise<IUserDto[]> {
-    return this.DB.user.findMany({
-      select: {
-        id: true,
-        name: true,
-        email: true,
-      },
-      where: {
-        deletedAt: null,
-      },
-    });
+  async getUserWithPassword(email: string): Promise<IUserWithPassword | null> {
+    const result = await this.DB.select({
+      id: UserDbTable.id,
+      name: UserDbTable.name,
+      email: UserDbTable.email,
+      password: UserDbTable.password,
+    })
+      .from(UserDbTable)
+      .where(eq(UserDbTable.email, email));
+
+    return result.length > 0 ? result[0] : null;
   }
 
-  findById(id: number): Promise<User | null> {
-    return this.DB.user.findFirst({
-      where: {
-        id,
-        deletedAt: null,
-      },
-    });
+  async findById(id: number): Promise<IUserDto | null> {
+    const results = await this.DB.select({
+      id: UserDbTable.id,
+      name: UserDbTable.name,
+      email: UserDbTable.email,
+    })
+      .from(UserDbTable)
+      .where(eq(UserDbTable.id, id));
+
+    return results.length > 0 ? results[0] : null;
   }
 
-  findOne(email: string) {
-    return this.DB.user.findFirst({
-      where: {
-        email,
-        deletedAt: null,
-      },
-    });
-  }
-
-  create(data: Prisma.UserCreateInput): Promise<User> {
-    return this.DB.user.create({
-      data,
-    });
-  }
-
-  update(id: number, data: Prisma.UserUpdateInput): Promise<User> {
-    return this.DB.user.update({
-      where: {
-        id,
-      },
-      data: {
+  async create(data: IUserInput, refreshToken: string): Promise<IUserDto> {
+    const results = await this.DB.insert(UserDbTable)
+      .values({
         ...data,
-        updatedAt: new Date(),
-      },
-    });
+        refreshToken,
+      })
+      .returning();
+
+    return results[0];
   }
 }
